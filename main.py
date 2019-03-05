@@ -1,60 +1,67 @@
-
 #import
-import os
 import csv
+import os
 
-#set variables
+#set varaibles
+candidates = []
+num_votes = 0
+vote_counts = []
 
-month_count = []
-profit = []
-change_profit = []
+# join path
 
-#join paths
-
-filepath = os.path.join("Resources", "budget_data.csv")
-
-#open and read csv file -make sure to set delimiter
-with open(filepath, newline= "") as csvfile:
-   csvreader=csv.reader(csvfile, delimiter= ",")
-   header = next(csvreader)
+filepath = os.path.join("Resources", "election_data.csv")
 
 
+#open the file and read
+with open(filepath,newline="") as csvfile:
+   csvreader = csv.reader(csvfile)
 
-#iterate through all values
-   for row in csvreader:
-       month_count.append(row[0])
-       profit.append(int(row[1]))
-   for i in range(len(profit)-1):
-       change_profit.append(profit[i+1]-profit[i])
+#iterate
+   line = next(csvreader,None)
+   for line in csvreader:
+       num_votes = num_votes + 1
+       candidate = line[2]
+       if candidate in candidates:
+           candidate_index = candidates.index(candidate)
+           vote_counts[candidate_index] = vote_counts[candidate_index] + 1
+       else:
+           candidates.append(candidate)
+           vote_counts.append(1)
 
-
-   increase=max(change_profit)
-   decrease=min(change_profit)
-
-   month_increase = change_profit.index(max(change_profit))+1
-   month_decrease = change_profit.index(min(change_profit))+1
+percentages = []
+max_votes = vote_counts[0]
+max_index = 0
+for count in range(len(candidates)):
+   vote_percentage = vote_counts[count]/num_votes*100
+   percentages.append(vote_percentage)
+   if vote_counts[count] > max_votes:
+       max_votes = vote_counts[count]
+       print(max_votes)
+       max_index = count
+winner = candidates[max_index]
 
 #print results
-print(" Financial Analysis:")
+print("Election Results")
 print("--------------------------")
-print(f"Total Months:{len(month_count)}")
-print(f"Total: ${sum(profit)}")
-print(f"Average Change: {round(sum(change_profit)/len(change_profit),2)}")
-print(f"Greatest Increase in Profits:{month_count[month_increase]} (${(str(increase))})")
-print(f"Greatest Decrease in Profit:{month_count[month_decrease]}(${(str(decrease))})")
+print(f"Total Votes: {num_votes}")
+for count in range(len(candidates)):
+   print(f"{candidates[count]}: {percentages[count]}% ({vote_counts[count]})")
+print("---------------------------")
+print(f"Winner: {winner}")
+print("---------------------------")
 
+write_file = f"pypoll_results_summary.txt"
 
-write_file = f"pybank_results_summary.txt"
-
-#insert output file
+#output file
 output_file = os.path.join("output.txt")
 with open (output_file,"w") as new:
-    new.write("Financial Analysis\n")
-    new.write("--------------------------\n")
-    new.write(f"Total Months:{len(month_count)}\n")
-    new.write(f"Total: ${sum(profit)}\n")
-    new.write(f"Average Change:{round(sum(change_profit)/len(change_profit),2)}\n")
-    new.write(f"Greatest Increase in Profits: {month_count[month_increase]} (${(str(increase))})\n")
-    new.write(f"Greatest Decrease in Profits: {month_count[month_decrease]} (${(str(decrease))})\n")
+new.write("Election Results\n")
+new.write("--------------------------\n")
+new.write(f"Total Votes: {num_votes}\n")
+for count in range(len(candidates)):
+   new.write(f"{candidates[count]}: {percentages[count]}% ({vote_counts[count]})\n")
+new.write("---------------------------\n")
+new.write(f"Winner: {winner}\n")
+new.write("---------------------------\n")
 
-    output_file.close()
+output_file.close()
